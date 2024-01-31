@@ -1346,13 +1346,18 @@ Expects input in format such as: [2017-04-05 Wed 01:00]--[2017-04-05 Wed 01:46] 
                     ;; If it has changed, update the worklog.
                     ;; If it has not changed, skip.
                     (let ((jira-worklog (gethash (cdr (assoc 'worklog-id worklog)) jira-worklogs-ht)))
-                      (when (and jira-worklog
+                      (when (and nil jira-worklog
                                  ;; Check if the entries are differing lengths.
                                  (or (not (= (cdr (assoc 'timeSpentSeconds jira-worklog))
                                          (cdr (assoc 'time-spent-seconds worklog))))
                                  ;; Check if the entries start at different times.
                                      (not (string= (cdr (assoc 'started jira-worklog))
                                                (cdr (assoc 'started worklog))))))
+                        (org-jira-log (format "Updating worklog %s id %s start %s"
+                                              issue-id
+                                              (cdr (assoc 'worklog-id worklog))
+                                              (cdr (assoc 'started worklog))
+                                              (cdr (assoc 'time-spent-seconds worklog))))
                         (jiralib-update-worklog
                          issue-id
                          (cdr (assoc 'worklog-id worklog))
@@ -1361,12 +1366,18 @@ Expects input in format such as: [2017-04-05 Wed 01:00]--[2017-04-05 Wed 01:46] 
                          comment-text
                          nil))) ; no callback - synchronous
                   ;; else
-                  (jiralib-add-worklog
-                   issue-id
-                   (cdr (assoc 'started worklog))
-                   (cdr (assoc 'time-spent-seconds worklog))
-                   comment-text
-                   nil) ; no callback - synchronous
+                  (let ()
+                   (org-jira-log (format "Adding new worklog %s start %s"
+                                         issue-id
+                                         (cdr (assoc 'started worklog))
+                                         (cdr (assoc 'time-spent-seconds worklog))))
+                   (jiralib-add-worklog
+                    issue-id
+                    (cdr (assoc 'started worklog))
+                    (cdr (assoc 'time-spent-seconds worklog))
+                    comment-text
+                    nil) ; no callback - synchronous
+                   )
                   )
                 )))))
       (org-jira-log (format "Updating worklog from org-jira-update-worklogs-from-org-clocks call"))
